@@ -4,19 +4,56 @@
 #include <math.h>
 #include <string.h>
 
-static inline step_motor_direction_t step_motor_speed_to_direction(float32_t speed,
-                                                                   float32_t stall_speed)
+static inline float32_t step_motor_get_clamped_position(step_motor_t const* step_motor,
+                                                        float32_t position)
 {
-    return fabsf(speed) < fabsf(stall_speed)
+    if (fabsf(position) < step_motor->config.min_position) {
+        return step_motor->config.min_position;
+    } else if (fabsf(position) > step_motor->config.max_position) {
+        return step_motor->config.max_position;
+    }
+
+    return position;
+}
+
+static inline float32_t step_motor_get_clamped_speed(step_motor_t const* step_motor,
+                                                     float32_t speed)
+{
+    if (fabsf(speed) < step_motor->config.min_speed) {
+        return copysignf(step_motor->config.min_speed, speed);
+    } else if (fabsf(speed) > step_motor->config.max_speed) {
+        return copysignf(step_motor->config.max_speed, speed);
+    }
+
+    return speed;
+}
+
+static inline float32_t step_motor_get_clamped_acceleration(step_motor_t const* step_motor,
+                                                            float32_t acceleration)
+{
+    if (fabsf(acceleration) < step_motor->config.min_acceleration) {
+        return copysignf(step_motor->config.min_acceleration, acceleration);
+    } else if (fabsf(acceleration) > step_motor->config.max_acceleration) {
+        return copysignf(step_motor->config.max_acceleration, acceleration);
+    }
+
+    return acceleration;
+}
+
+static inline step_motor_direction_t step_motor_speed_to_direction(step_motor_t const* step_motor,
+                                                                   float32_t speed)
+{
+    return fabsf(speed) < fabsf(step_motor->config.stall_speed)
                ? STEP_MOTOR_DIRECTION_STOP
                : (speed > 0.0F ? STEP_MOTOR_DIRECTION_FORWARD : STEP_MOTOR_DIRECTION_BACKWARD);
 }
 
-static inline uint32_t step_motor_speed_to_frequency(float32_t speed, float32_t step_change)
+static inline uint32_t step_motor_speed_to_frequency(step_motor_t const* step_motor,
+                                                     float32_t speed)
 {
-    assert(step_change > 0.0F);
+    assert(step_motor->config.step_change > 0.0F);
 
-    return (uint32_t)fabsf(speed / step_change);
+    return (uint32_t)fabsf(speed / step_motor->config.step_change);
 }
 
 static step_motor_err_t step_motor_driver_init(step_motor_t const* step_motor)
@@ -175,8 +212,7 @@ step_motor_err_t step_motor_set_position(step_motor_t* step_motor,
 {
     assert(step_motor && sampling_time > 0.0F);
 
-    position =
-        fminf(step_motor->config.max_position, fmaxf(step_motor->config.min_position, position));
+    position = step_motor_get_clamped_position(step_motor, position);
 
     float32_t speed = (position - step_motor->prev_position) / sampling_time;
 
@@ -195,24 +231,19 @@ step_motor_err_t step_motor_set_speed(step_motor_t* step_motor,
 {
     assert(step_motor && sampling_time > 0.0F);
 
-    step_motor_direction_t direction =
-        step_motor_speed_to_direction(speed, step_motor->config.stall_speed);
+    step_motor_direction_t direction = step_motor_speed_to_direction(step_motor, speed);
 
     step_motor_err_t err = step_motor_set_direction(step_motor, direction);
     if (err != STEP_MOTOR_ERR_OK || direction == STEP_MOTOR_DIRECTION_STOP) {
         return err;
     }
 
-    if (fabsf(speed) < step_motor->config.min_speed) {
-        speed = copysignf(step_motor->config.min_speed, speed);
-    } else if (fabsf(speed) > step_motor->config.max_speed) {
-        speed = copysignf(step_motor->config.max_speed, speed);
-    }
+    speed = step_motor_get_clamped_speed(step_motor, speed);
 
-    uint32_t frequency = step_motor_speed_to_frequency(speed, step_motor->config.step_change);
+    uint32_t frequency = step_motor_speed_to_frequency(step_motor, speed);
 
     err |= step_motor_set_frequency(step_motor, frequency);
-    if (err != STEP_MOTOR_ERR_FAIL) {
+    if (err == STEP_MOTOR_ERR_OK) {
         step_motor->prev_speed = speed;
     }
 
@@ -225,16 +256,12 @@ step_motor_err_t step_motor_set_acceleration(step_motor_t* step_motor,
 {
     assert(step_motor && sampling_time > 0.0F);
 
-    if (fabsf(acceleration) < step_motor->config.min_acceleration) {
-        acceleration = copysignf(step_motor->config.min_acceleration, acceleration);
-    } else if (fabsf(acceleration) > step_motor->config.max_acceleration) {
-        acceleration = copysignf(step_motor->config.max_acceleration, acceleration);
-    }
+    acceleration = step_motor_get_clamped_acceleration(step_motor, acceleration);
 
     float32_t speed = (acceleration + step_motor->prev_acceleration) * sampling_time / 2.0F;
 
     step_motor_err_t err = step_motor_set_speed(step_motor, speed, sampling_time);
-    if (err != STEP_MOTOR_ERR_FAIL) {
+    if (err == STEP_MOTOR_ERR_OK) {
         step_motor->prev_speed = speed;
         step_motor->prev_acceleration = acceleration;
     }

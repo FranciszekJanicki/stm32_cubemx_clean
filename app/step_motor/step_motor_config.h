@@ -24,8 +24,8 @@ typedef struct {
     float32_t max_speed;
     float32_t min_acceleration;
     float32_t max_acceleration;
-    float32_t step_change;
     float32_t stall_speed;
+    float32_t step_change;
 } step_motor_config_t;
 
 typedef struct {
