@@ -181,7 +181,6 @@ step_motor_err_t step_motor_set_position(step_motor_t* step_motor,
     float32_t speed = (position - step_motor->prev_position) / sampling_time;
 
     step_motor_err_t err = step_motor_set_speed(step_motor, speed, sampling_time);
-
     if (err != STEP_MOTOR_ERR_FAIL) {
         step_motor->prev_position = position;
         step_motor->prev_speed = speed;
@@ -200,7 +199,7 @@ step_motor_err_t step_motor_set_speed(step_motor_t* step_motor,
         step_motor_speed_to_direction(speed, step_motor->config.stall_speed);
 
     step_motor_err_t err = step_motor_set_direction(step_motor, direction);
-    if (direction == STEP_MOTOR_DIRECTION_STOP) {
+    if (err != STEP_MOTOR_ERR_OK || direction == STEP_MOTOR_DIRECTION_STOP) {
         return err;
     }
 
@@ -213,7 +212,6 @@ step_motor_err_t step_motor_set_speed(step_motor_t* step_motor,
     uint32_t frequency = step_motor_speed_to_frequency(speed, step_motor->config.step_change);
 
     err |= step_motor_set_frequency(step_motor, frequency);
-
     if (err != STEP_MOTOR_ERR_FAIL) {
         step_motor->prev_speed = speed;
     }
@@ -236,7 +234,6 @@ step_motor_err_t step_motor_set_acceleration(step_motor_t* step_motor,
     float32_t speed = (acceleration + step_motor->prev_acceleration) * sampling_time / 2.0F;
 
     step_motor_err_t err = step_motor_set_speed(step_motor, speed, sampling_time);
-
     if (err != STEP_MOTOR_ERR_FAIL) {
         step_motor->prev_speed = speed;
         step_motor->prev_acceleration = acceleration;
