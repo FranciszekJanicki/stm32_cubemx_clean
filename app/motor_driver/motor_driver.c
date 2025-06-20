@@ -1,5 +1,6 @@
 #include "motor_driver.h"
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -27,10 +28,14 @@ void motor_driver_set_position(motor_driver_t* driver, float32_t position, float
 {
     assert(driver);
 
+    // y
     float32_t measured_position;
     rotary_encoder_get_position(&driver->encoder, &measured_position);
 
+    // e = y - y_ref
     float32_t error_position = position - measured_position;
+
+    // u = pid(e)
     float32_t control_speed =
         pid_regulator_get_sat_control(&driver->regulator, error_position, delta_time);
 

@@ -12,7 +12,7 @@ typedef enum {
 } rotary_encoder_err_t;
 
 typedef struct {
-    int32_t step_count;
+    int64_t step_count;
     float32_t prev_position;
     float32_t prev_speed;
 } rotary_encoder_state_t;
@@ -27,7 +27,7 @@ typedef struct {
     void* device_user;
     rotary_encoder_err_t (*device_init)(void*);
     rotary_encoder_err_t (*device_deinit)(void*);
-    rotary_encoder_err_t (*device_get_step_count)(void*, int32_t*);
+    rotary_encoder_err_t (*device_get_step_count)(void*, int64_t*);
 } rotary_encoder_interface_t;
 
 #endif // ROTARY_ENCODER_ROTARY_ENCODER_CONFIG_H

@@ -127,22 +127,25 @@ static inline float32_t step_motor_wrap_position(float32_t position)
     while (position < 0.0F) {
         position += 360.0F;
     }
+    if (position >= 360.0F) {
+        position -= 360.0F;
+    }
 
     return position;
 }
 
-static inline int32_t step_motor_position_to_step_count(step_motor_t const* motor,
+static inline int64_t step_motor_position_to_step_count(step_motor_t const* motor,
                                                         float32_t position)
 {
     assert(motor->config.step_change > 0.0F);
 
     float32_t step_count = step_motor_wrap_position(position) / motor->config.step_change;
 
-    return (int32_t)roundf(step_count);
+    return (int64_t)roundf(step_count);
 }
 
 static inline float32_t step_motor_step_count_to_position(step_motor_t const* motor,
-                                                          int32_t step_count)
+                                                          int64_t step_count)
 {
     assert(motor->config.step_change > 0.0F);
 
@@ -196,10 +199,10 @@ void step_motor_update_step_count(step_motor_t* motor)
     assert(motor);
 
     if (motor->state.direction == STEP_MOTOR_DIRECTION_BACKWARD &&
-        motor->state.step_count != LONG_MIN) {
+        motor->state.step_count != LLONG_MIN) {
         motor->state.step_count--;
     } else if (motor->state.direction == STEP_MOTOR_DIRECTION_FORWARD &&
-               motor->state.step_count != LONG_MAX) {
+               motor->state.step_count != LLONG_MAX) {
         motor->state.step_count++;
     }
 }
@@ -230,7 +233,6 @@ step_motor_err_t step_motor_set_speed(step_motor_t* motor, float32_t speed, floa
     }
 
     speed = step_motor_clamp_speed(motor, speed);
-
     uint32_t frequency = step_motor_speed_to_frequency(motor, speed, delta_time);
 
     return step_motor_set_frequency(motor, frequency);

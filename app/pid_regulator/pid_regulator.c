@@ -15,13 +15,14 @@ static inline float32_t pid_regulator_get_dot_term(pid_regulator_t* regulator,
 {
     float32_t dot_error = (error - regulator->state.prev_error) / delta_time;
 
-    if (regulator->config.dot_time > 0.0F) {
-        float32_t alpha = delta_time / (regulator->config.dot_time + delta_time);
-        regulator->state.dot_error =
-            alpha * dot_error + (1.0F - alpha) * regulator->state.dot_error;
-    } else {
-        regulator->state.dot_error = dot_error;
-    }
+    // if (regulator->config.dot_time > 0.0F) {
+    //     float32_t alpha = delta_time / (regulator->config.dot_time + delta_time);
+    //     regulator->state.dot_error =
+    //         alpha * dot_error + (1.0F - alpha) * regulator->state.dot_error;
+    // } else
+    regulator->state.dot_error = dot_error;
+    // }
+    regulator->state.prev_error = error;
 
     return regulator->config.dot_gain * regulator->state.dot_error;
 }
@@ -40,10 +41,12 @@ static inline float32_t pid_regulator_get_int_term(pid_regulator_t* regulator,
 
 static inline float32_t pid_regulator_clamp_control(pid_regulator_t* regulator, float32_t control)
 {
-    if (fabsf(control) > regulator->config.max_control) {
-        control = copysignf(regulator->config.max_control, control);
-    } else if (fabsf(control) < regulator->config.min_control) {
-        control = copysignf(regulator->config.min_control, control);
+    if (control != 0.0F) {
+        if (fabsf(control) > regulator->config.max_control) {
+            control = copysignf(regulator->config.max_control, control);
+        } else if (fabsf(control) < regulator->config.min_control) {
+            control = copysignf(regulator->config.min_control, control);
+        }
     }
 
     return control;
@@ -80,8 +83,6 @@ float32_t pid_regulator_get_control(pid_regulator_t* regulator,
     float32_t prop_term = pid_regulator_get_prop_term(regulator, error);
     float32_t int_term = pid_regulator_get_int_term(regulator, error, delta_time);
     float32_t dot_term = pid_regulator_get_dot_term(regulator, error, delta_time);
-
-    regulator->state.prev_error = error;
 
     return prop_term + int_term + dot_term;
 }

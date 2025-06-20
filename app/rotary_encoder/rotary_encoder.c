@@ -18,7 +18,7 @@ static rotary_encoder_err_t rotary_encoder_device_deinit(rotary_encoder_t const*
 }
 
 static rotary_encoder_err_t rotary_encoder_device_get_step_count(rotary_encoder_t const* encoder,
-                                                                 int32_t* step_count)
+                                                                 int64_t* step_count)
 {
     return encoder->interface.device_get_step_count
                ? encoder->interface.device_get_step_count(encoder->interface.device_user,
@@ -33,22 +33,25 @@ static inline float32_t rotary_encoder_wrap_position(float32_t position)
     while (position < 0.0F) {
         position += 360.0F;
     }
+    if (position >= 360.0F) {
+        position -= 360.0F;
+    }
 
     return position;
 }
 
-static inline int32_t rotary_encoder_position_to_step_count(rotary_encoder_t const* encoder,
+static inline int64_t rotary_encoder_position_to_step_count(rotary_encoder_t const* encoder,
                                                             float32_t position)
 {
     assert(encoder->config.step_change > 0.0F);
 
     float32_t step_count = rotary_encoder_wrap_position(position) / encoder->config.step_change;
 
-    return (int32_t)roundf(step_count);
+    return (int64_t)roundf(step_count);
 }
 
 static inline float32_t rotary_encoder_step_count_to_position(rotary_encoder_t const* encoder,
-                                                              int32_t step_count)
+                                                              int64_t step_count)
 {
     assert(encoder->config.step_change > 0.0F);
 
@@ -94,7 +97,7 @@ rotary_encoder_err_t rotary_encoder_get_position(rotary_encoder_t* encoder, floa
 {
     assert(encoder && position);
 
-    int32_t step_count;
+    int64_t step_count;
     rotary_encoder_err_t err = rotary_encoder_device_get_step_count(encoder, &step_count);
 
     *position = rotary_encoder_step_count_to_position(encoder, step_count);

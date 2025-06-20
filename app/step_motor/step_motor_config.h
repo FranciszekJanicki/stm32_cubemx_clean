@@ -19,7 +19,7 @@ typedef enum {
 
 typedef struct {
     uint32_t frequency;
-    int32_t step_count;
+    int64_t step_count;
     float32_t prev_position;
     float32_t prev_speed;
     step_motor_direction_t direction;

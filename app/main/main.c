@@ -15,7 +15,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-static void frequency_to_prescaler_and_period(uint32_t frequency,
+static bool frequency_to_prescaler_and_period(uint32_t frequency,
                                               uint32_t clock_hz,
                                               uint32_t clock_div,
                                               uint32_t max_prescaler,
@@ -23,7 +23,9 @@ static void frequency_to_prescaler_and_period(uint32_t frequency,
                                               uint32_t* prescaler,
                                               uint32_t* period)
 {
-    assert(prescaler && period);
+    if (frequency == 0U || !prescaler || !period) {
+        return false;
+    }
 
     uint32_t base_clock = clock_hz / (clock_div + 1U);
     uint32_t temp_prescaler = 0U;
@@ -43,6 +45,8 @@ static void frequency_to_prescaler_and_period(uint32_t frequency,
 
     *prescaler = temp_prescaler;
     *period = temp_period;
+
+    return true;
 }
 
 static a4988_err_t a4988_gpio_write_pin(void* user, uint32_t pin, bool state)
@@ -78,19 +82,19 @@ static a4988_err_t a4988_pwm_set_freq(void* user, uint32_t freq)
 
     uint32_t prescaler;
     uint32_t period;
-    frequency_to_prescaler_and_period(freq,
-                                      80000000U,
-                                      0U,
-                                      1U << 16U,
-                                      1U << 16U,
-                                      &prescaler,
-                                      &period);
-
-    __HAL_TIM_DISABLE(&htim1);
-    __HAL_TIM_SET_PRESCALER(&htim1, prescaler);
-    __HAL_TIM_SET_AUTORELOAD(&htim1, period);
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, period / 2U);
-    __HAL_TIM_ENABLE(&htim1);
+    if (frequency_to_prescaler_and_period(freq,
+                                          80000000U,
+                                          0U,
+                                          1U << 16U,
+                                          1U << 16U,
+                                          &prescaler,
+                                          &period)) {
+        __HAL_TIM_DISABLE(&htim1);
+        __HAL_TIM_SET_PRESCALER(&htim1, prescaler);
+        __HAL_TIM_SET_AUTORELOAD(&htim1, period);
+        __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, period / 2U);
+        __HAL_TIM_ENABLE(&htim1);
+    }
 
     return A4988_ERR_OK;
 }
@@ -110,7 +114,7 @@ static step_motor_err_t step_motor_device_set_direction(void* user,
     return STEP_MOTOR_ERR_OK;
 }
 
-static rotary_encoder_err_t rotary_encoder_device_get_step_count(void* user, int32_t* step_count)
+static rotary_encoder_err_t rotary_encoder_device_get_step_count(void* user, int64_t* step_count)
 {
     *step_count = ((step_motor_t*)user)->state.step_count;
 
@@ -157,7 +161,7 @@ int main(void)
         &motor,
         &(step_motor_config_t){.min_position = 0.0F,
                                .max_position = 360.0F,
-                               .min_speed = 10.0F,
+                               .min_speed = 0.0F,
                                .max_speed = 500.0F,
                                .step_change = 0.9F},
         &(step_motor_interface_t){.device_user = &a4988,
@@ -168,7 +172,7 @@ int main(void)
     pid_regulator_t regulator;
     pid_regulator_initialize(&regulator,
                              &(pid_regulator_config_t){.prop_gain = 10.0F,
-                                                       .int_gain = 1.0F,
+                                                       .int_gain = 0.0F,
                                                        .dot_gain = 0.0F,
                                                        .min_control = 0.0F,
                                                        .max_control = 500.0F,
@@ -187,8 +191,8 @@ int main(void)
 
     driver.encoder.interface.device_user = &driver.motor;
 
-    float32_t ref_position = 10.0F;
-    float32_t ref_position_step = 1.0F;
+    float32_t position = 10.0F;
+    float32_t position_step = 1.0F;
     float32_t delta_time = 0.01F;
 
     HAL_TIM_PWM_Start_IT(&htim1, TIM_CHANNEL_4);
@@ -196,12 +200,12 @@ int main(void)
 
     while (1) {
         if (has_delta_timer_elapsed) {
-            motor_driver_set_position(&driver, ref_position, delta_time);
+            motor_driver_set_position(&driver, position, delta_time);
 
-            // if (ref_position > 360.0F || ref_position < 0.0F) {
-            //     ref_position_step = -ref_position_step;
-            // }
-            // ref_position += ref_position_step;
+            if (position > 360.0F || position < 0.0F) {
+                position_step = -position_step;
+            }
+            position += position_step;
 
             has_delta_timer_elapsed = false;
         }
