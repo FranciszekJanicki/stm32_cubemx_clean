@@ -18,24 +18,30 @@ typedef enum {
 } step_motor_direction_t;
 
 typedef struct {
+    uint32_t frequency;
+    int32_t step_count;
+    float32_t prev_position;
+    float32_t prev_speed;
+    float32_t prev_acceleration;
+    step_motor_direction_t direction;
+} step_motor_state_t;
+
+typedef struct {
     float32_t min_position;
     float32_t max_position;
     float32_t min_speed;
     float32_t max_speed;
     float32_t min_acceleration;
     float32_t max_acceleration;
-    float32_t stall_speed;
     float32_t step_change;
 } step_motor_config_t;
 
 typedef struct {
-    void* driver_user;
-    step_motor_err_t (*driver_init)(void*);
-    step_motor_err_t (*driver_deinit)(void*);
-    step_motor_err_t (*driver_start)(void*);
-    step_motor_err_t (*driver_stop)(void*);
-    step_motor_err_t (*driver_set_frequency)(void*, uint32_t);
-    step_motor_err_t (*driver_set_direction)(void*, step_motor_direction_t);
+    void* device_user;
+    step_motor_err_t (*device_init)(void*);
+    step_motor_err_t (*device_deinit)(void*);
+    step_motor_err_t (*device_set_frequency)(void*, uint32_t);
+    step_motor_err_t (*device_set_direction)(void*, step_motor_direction_t);
 } step_motor_interface_t;
 
 #endif // STEP_MOTOR_STEP_MOTOR_CONFIG_H

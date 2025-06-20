@@ -3,35 +3,34 @@
 #include <assert.h>
 #include <string.h>
 
-static a4988_err_t a4988_pulse_init(a4988_t const* a4988)
+static a4988_err_t a4988_pwm_init(a4988_t const* a4988)
 {
-    return a4988->interface.pulse_init ? a4988->interface.pulse_init(a4988->interface.pulse_user)
+    return a4988->interface.pwm_init ? a4988->interface.pwm_init(a4988->interface.pwm_user)
+                                     : A4988_ERR_NULL;
+}
+
+static a4988_err_t a4988_pwm_deinit(a4988_t const* a4988)
+{
+    return a4988->interface.pwm_deinit ? a4988->interface.pwm_deinit(a4988->interface.pwm_user)
                                        : A4988_ERR_NULL;
 }
 
-static a4988_err_t a4988_pulse_deinit(a4988_t const* a4988)
+static a4988_err_t a4988_pwm_start(a4988_t const* a4988)
 {
-    return a4988->interface.pulse_deinit
-               ? a4988->interface.pulse_deinit(a4988->interface.pulse_user)
-               : A4988_ERR_NULL;
+    return a4988->interface.pwm_start ? a4988->interface.pwm_start(a4988->interface.pwm_user)
+                                      : A4988_ERR_NULL;
 }
 
-static a4988_err_t a4988_pulse_start(a4988_t const* a4988)
+static a4988_err_t a4988_pwm_stop(a4988_t const* a4988)
 {
-    return a4988->interface.pulse_start ? a4988->interface.pulse_start(a4988->interface.pulse_user)
-                                        : A4988_ERR_NULL;
+    return a4988->interface.pwm_stop ? a4988->interface.pwm_stop(a4988->interface.pwm_user)
+                                     : A4988_ERR_NULL;
 }
 
-static a4988_err_t a4988_pulse_stop(a4988_t const* a4988)
+static a4988_err_t a4988_pwm_set_freq(a4988_t const* a4988, uint32_t freq)
 {
-    return a4988->interface.pulse_stop ? a4988->interface.pulse_stop(a4988->interface.pulse_user)
-                                       : A4988_ERR_NULL;
-}
-
-static a4988_err_t a4988_pulse_set_freq(a4988_t const* a4988, uint32_t freq)
-{
-    return a4988->interface.pulse_set_freq
-               ? a4988->interface.pulse_set_freq(a4988->interface.pulse_user, freq)
+    return a4988->interface.pwm_set_freq
+               ? a4988->interface.pwm_set_freq(a4988->interface.pwm_user, freq)
                : A4988_ERR_NULL;
 }
 
@@ -64,7 +63,7 @@ a4988_err_t a4988_initialize(a4988_t* a4988,
     memcpy(&a4988->config, config, sizeof(*config));
     memcpy(&a4988->interface, interface, sizeof(*interface));
 
-    a4988_err_t err = a4988_pulse_init(a4988);
+    a4988_err_t err = a4988_pwm_init(a4988);
     err |= a4988_gpio_init(a4988);
 
     return err;
@@ -74,7 +73,7 @@ a4988_err_t a4988_deinitialize(a4988_t* a4988)
 {
     assert(a4988);
 
-    a4988_err_t err = a4988_pulse_deinit(a4988);
+    a4988_err_t err = a4988_pwm_deinit(a4988);
     err |= a4988_gpio_deinit(a4988);
 
     return err;
@@ -84,7 +83,7 @@ a4988_err_t a4988_set_frequency(a4988_t const* a4988, uint32_t frequency)
 {
     assert(a4988);
 
-    return a4988_pulse_set_freq(a4988, frequency);
+    return a4988_pwm_set_freq(a4988, frequency);
 }
 
 a4988_err_t a4988_set_microstep(a4988_t const* a4988, a4988_microstep_t microstep)
@@ -183,7 +182,7 @@ a4988_err_t a4988_set_forward_direction(a4988_t const* a4988)
     assert(a4988);
 
     a4988_err_t err = a4988_gpio_write_pin(a4988, a4988->config.pin_dir, false);
-    err |= a4988_pulse_start(a4988);
+    err |= a4988_pwm_start(a4988);
 
     return err;
 }
@@ -193,7 +192,7 @@ a4988_err_t a4988_set_backward_direction(a4988_t const* a4988)
     assert(a4988);
 
     a4988_err_t err = a4988_gpio_write_pin(a4988, a4988->config.pin_dir, true);
-    err |= a4988_pulse_start(a4988);
+    err |= a4988_pwm_start(a4988);
 
     return err;
 }
@@ -202,7 +201,7 @@ a4988_err_t a4988_set_stop_direction(a4988_t const* a4988)
 {
     assert(a4988);
 
-    return a4988_pulse_stop(a4988);
+    return a4988_pwm_stop(a4988);
 }
 
 a4988_err_t a4988_set_reset(a4988_t const* a4988, bool reset)

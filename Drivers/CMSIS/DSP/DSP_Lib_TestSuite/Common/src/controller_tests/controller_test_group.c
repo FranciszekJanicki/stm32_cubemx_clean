@@ -1,5 +1,5 @@
-#include "jtest.h"
 #include "controller_tests.h"
+#include "jtest.h"
 
 JTEST_DEFINE_GROUP(controller_tests)
 {

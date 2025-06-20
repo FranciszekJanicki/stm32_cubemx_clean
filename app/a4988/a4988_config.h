@@ -58,12 +58,12 @@ typedef struct {
     a4988_err_t (*gpio_deinit)(void*);
     a4988_err_t (*gpio_write_pin)(void*, uint32_t, bool);
 
-    void* pulse_user;
-    a4988_err_t (*pulse_init)(void*);
-    a4988_err_t (*pulse_deinit)(void*);
-    a4988_err_t (*pulse_start)(void*);
-    a4988_err_t (*pulse_stop)(void*);
-    a4988_err_t (*pulse_set_freq)(void*, uint32_t);
+    void* pwm_user;
+    a4988_err_t (*pwm_init)(void*);
+    a4988_err_t (*pwm_deinit)(void*);
+    a4988_err_t (*pwm_start)(void*);
+    a4988_err_t (*pwm_stop)(void*);
+    a4988_err_t (*pwm_set_freq)(void*, uint32_t);
 } a4988_interface_t;
 
 #endif // A4988_A4988_CONFIG_H

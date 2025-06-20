@@ -1,28 +1,16 @@
-add_executable(main)
+add_library(rotary_encoder STATIC)
 
-target_sources(main PRIVATE 
-    "main.c"
+target_sources(rotary_encoder PRIVATE 
+    "rotary_encoder.c"
 )
 
-target_include_directories(main PRIVATE 
-    ${CMAKE_DIR}/stm32cubemx
-    ${APP_DIR}/motor_driver
-    ${APP_DIR}/a4988
-    ${APP_DIR}/step_motor
-    ${APP_DIR}/rotary_encoder
-    ${APP_DIR}/pid_regulator
+target_include_directories(rotary_encoder PRIVATE 
 )
 
-target_link_libraries(main PRIVATE
-    stm32cubemx
-    motor_driver
-    a4988
-    step_motor
-    rotary_encoder
-    pid_regulator
+target_link_libraries(rotary_encoder PRIVATE
 )
 
-target_compile_options(main PUBLIC
+target_compile_options(rotary_encoder PUBLIC
     -std=c23
     -Wall
     -Wextra
