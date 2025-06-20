@@ -26,26 +26,18 @@ step_motor_err_t step_motor_reset(step_motor_t* step_motor);
 step_motor_err_t step_motor_start(step_motor_t* step_motor);
 step_motor_err_t step_motor_stop(step_motor_t* step_motor);
 
-step_motor_err_t step_motor_update_step_count(step_motor_t* step_motor);
+void step_motor_update_step_count(step_motor_t* step_motor);
 
 step_motor_err_t step_motor_set_position(step_motor_t* step_motor,
                                          float32_t position,
                                          float32_t sampling_time);
-step_motor_err_t step_motor_set_speed(step_motor_t* step_motor,
-                                      float32_t speed,
-                                      float32_t sampling_time);
+step_motor_err_t step_motor_set_speed(step_motor_t* step_motor, float32_t speed);
 step_motor_err_t step_motor_set_acceleration(step_motor_t* step_motor,
                                              float32_t acceleration,
                                              float32_t sampling_time);
 
-step_motor_err_t step_motor_set_position_ramp(step_motor_t* step_motor,
-                                              float32_t position,
-                                              float32_t sampling_time);
-step_motor_err_t step_motor_set_speed_ramp(step_motor_t* step_motor,
-                                           float32_t speed,
-                                           float32_t sampling_time);
-step_motor_err_t step_motor_set_acceleration_ramp(step_motor_t* step_motor,
-                                                  float32_t acceleration,
-                                                  float32_t sampling_time);
+float32_t step_motor_get_position(step_motor_t* step_motor);
+float32_t step_motor_get_speed(step_motor_t* step_motor, float32_t sampling_time);
+float32_t step_motor_get_acceleration(step_motor_t* step_motor, float32_t sampling_time);
 
 #endif // STEP_MOTOR_STEP_MOTOR_H

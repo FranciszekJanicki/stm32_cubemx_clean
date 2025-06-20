@@ -1,24 +1,16 @@
-add_executable(main)
+add_library(pid STATIC)
 
-target_sources(main PRIVATE 
-    "main.c"
+target_sources(pid PRIVATE 
+    "pid.c"
 )
 
-target_include_directories(main PRIVATE 
-    ${CMAKE_DIR}/stm32cubemx
-    ${APP_DIR}/a4988
-    ${APP_DIR}/step_motor
-    ${APP_DIR}/pid
+target_include_directories(pid PRIVATE 
 )
 
-target_link_libraries(main PRIVATE
-    stm32cubemx
-    a4988
-    step_motor
-    pid
+target_link_libraries(pid PRIVATE
 )
 
-target_compile_options(main PUBLIC
+target_compile_options(pid PUBLIC
     -std=c23
     -Wall
     -Wextra
