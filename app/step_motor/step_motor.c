@@ -127,9 +127,6 @@ static inline float32_t step_motor_wrap_position(float32_t position)
     while (position < 0.0F) {
         position += 360.0F;
     }
-    if (position >= 360.0F) {
-        position = 359.0F;
-    }
 
     return position;
 }
@@ -188,7 +185,7 @@ step_motor_err_t step_motor_reset(step_motor_t* motor)
     assert(motor);
 
     motor->state.frequency = 0UL;
-    motor->state.step_count = 0LL;
+    motor->state.step_count = 0L;
     motor->state.direction = STEP_MOTOR_DIRECTION_STOP;
 
     return step_motor_set_direction(motor, motor->state.direction);
@@ -199,10 +196,10 @@ void step_motor_update_step_count(step_motor_t* motor)
     assert(motor);
 
     if (motor->state.direction == STEP_MOTOR_DIRECTION_BACKWARD &&
-        motor->state.step_count != LLONG_MIN) {
+        motor->state.step_count != LONG_MIN) {
         motor->state.step_count--;
     } else if (motor->state.direction == STEP_MOTOR_DIRECTION_FORWARD &&
-               motor->state.step_count != LLONG_MAX) {
+               motor->state.step_count != LONG_MAX) {
         motor->state.step_count++;
     }
 }
@@ -214,6 +211,7 @@ step_motor_err_t step_motor_set_position(step_motor_t* motor,
     assert(motor && delta_time > 0.0F);
 
     position = step_motor_clamp_position(motor, position);
+
     float32_t current_position = step_motor_get_position(motor, delta_time);
     float32_t speed = (position - current_position) / delta_time;
 
@@ -232,6 +230,7 @@ step_motor_err_t step_motor_set_speed(step_motor_t* motor, float32_t speed, floa
     }
 
     speed = step_motor_clamp_speed(motor, speed);
+
     uint32_t frequency = step_motor_speed_to_frequency(motor, speed, delta_time);
 
     return step_motor_set_frequency(motor, frequency);
@@ -244,6 +243,7 @@ step_motor_err_t step_motor_set_acceleration(step_motor_t* motor,
     assert(motor && delta_time > 0.0F);
 
     acceleration = step_motor_clamp_acceleration(motor, acceleration);
+
     float32_t current_acceleration = step_motor_get_acceleration(motor, delta_time);
     float32_t speed = (acceleration + current_acceleration) * delta_time / 2.0F;
 
@@ -278,7 +278,7 @@ float32_t step_motor_get_acceleration(step_motor_t* motor, float32_t delta_time)
     float32_t speed = step_motor_get_speed(motor, delta_time);
     float32_t acceleration = (speed - motor->state.prev_speed) / delta_time;
 
-    motor->state.prev_acceleration = acceleration;
+    motor->state.prev_speed = speed;
 
     return acceleration;
 }

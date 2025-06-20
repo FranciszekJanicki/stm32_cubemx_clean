@@ -10,6 +10,7 @@
 #include "tim.h"
 #include "usart.h"
 #include <assert.h>
+#include <limits.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -46,7 +47,7 @@ static void frequency_to_prescaler_and_period(uint32_t frequency,
 
 static a4988_err_t a4988_gpio_write_pin(void* user, uint32_t pin, bool state)
 {
-    void(user);
+    (void)user;
 
     HAL_GPIO_WritePin(GPIOA, (uint16_t)pin, (GPIO_PinState)state);
 
@@ -55,7 +56,7 @@ static a4988_err_t a4988_gpio_write_pin(void* user, uint32_t pin, bool state)
 
 static a4988_err_t a4988_pwm_stop(void* user)
 {
-    void(user);
+    (void)user;
 
     HAL_TIM_PWM_Stop_IT(&htim1, TIM_CHANNEL_4);
 
@@ -64,7 +65,7 @@ static a4988_err_t a4988_pwm_stop(void* user)
 
 static a4988_err_t a4988_pwm_start(void* user)
 {
-    void(user);
+    (void)user;
 
     HAL_TIM_PWM_Start_IT(&htim1, TIM_CHANNEL_4);
 
@@ -73,11 +74,10 @@ static a4988_err_t a4988_pwm_start(void* user)
 
 static a4988_err_t a4988_pwm_set_freq(void* user, uint32_t freq)
 {
-    void(user);
+    (void)user;
 
     uint32_t prescaler;
     uint32_t period;
-
     frequency_to_prescaler_and_period(freq,
                                       80000000U,
                                       0U,
@@ -86,9 +86,11 @@ static a4988_err_t a4988_pwm_set_freq(void* user, uint32_t freq)
                                       &prescaler,
                                       &period);
 
-    htim1.Instance->PSC = prescaler;
-    htim1.Instance->ARR = period;
-    htim1.Instance->CCR4 = period / 2U;
+    __HAL_TIM_DISABLE(&htim1);
+    __HAL_TIM_SET_PRESCALER(&htim1, prescaler);
+    __HAL_TIM_SET_AUTORELOAD(&htim1, period);
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, period / 2U);
+    __HAL_TIM_ENABLE(&htim1);
 
     return A4988_ERR_OK;
 }
@@ -108,13 +110,15 @@ static step_motor_err_t step_motor_device_set_direction(void* user,
     return STEP_MOTOR_ERR_OK;
 }
 
-static rotary_encoder_err_t rotary_encoder_get_step_count(void* user, uint32_t step_count)
+static rotary_encoder_err_t rotary_encoder_device_get_step_count(void* user, int32_t* step_count)
 {
-    return 
+    *step_count = ((step_motor_t*)user)->state.step_count;
+
+    return ROTARY_ENCODER_ERR_OK;
 }
 
 static bool volatile has_delta_timer_elapsed = false;
-static bool volatile has_pwm_pwm_finished = false;
+static bool volatile has_pwm_finished = false;
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
@@ -126,7 +130,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim)
 {
     if (htim->Instance == TIM1) {
-        has_pwm_pwm_finished = true;
+        has_pwm_finished = true;
     }
 }
 
@@ -148,13 +152,13 @@ int main(void)
                                           .pwm_stop = a4988_pwm_stop,
                                           .pwm_set_freq = a4988_pwm_set_freq});
 
-    step_motor_t motor;
+    volatile step_motor_t motor;
     step_motor_initialize(
         &motor,
         &(step_motor_config_t){.min_position = 0.0F,
                                .max_position = 360.0F,
                                .min_speed = 10.0F,
-                               .max_speed = 1000.0F,
+                               .max_speed = 500.0F,
                                .step_change = 0.9F},
         &(step_motor_interface_t){.device_user = &a4988,
                                   .device_set_frequency = step_motor_device_set_frequency,
@@ -164,24 +168,26 @@ int main(void)
     pid_regulator_t regulator;
     pid_regulator_initialize(&regulator,
                              &(pid_regulator_config_t){.prop_gain = 10.0F,
-                                                       .int_gain = 0.0F,
+                                                       .int_gain = 1.0F,
                                                        .dot_gain = 0.0F,
                                                        .min_control = 0.0F,
-                                                       .max_control = 1000.0F,
+                                                       .max_control = 500.0F,
                                                        .sat_gain = 0.0F});
 
     rotary_encoder_t encoder;
-    rotary_encoder_initialize(
-        &encoder,
-        &(rotary_encoder_config_t){.step_change = 0.9F,
-                                   .min_position = 0.0F,
-                                   .max_position = 360.0F},
-        &(rotary_encoder_interface_t){.device_user = &motor, .device_get_step_count});
+    rotary_encoder_initialize(&encoder,
+                              &(rotary_encoder_config_t){.step_change = 0.9F,
+                                                         .min_position = 0.0F,
+                                                         .max_position = 360.0F},
+                              &(rotary_encoder_interface_t){
+                                  .device_get_step_count = rotary_encoder_device_get_step_count});
 
     motor_driver_t driver;
-    motor_driver_initialize(&driver, &ec)
+    motor_driver_initialize(&driver, &encoder, &regulator, &motor);
 
-        float32_t ref_position = 0.0F;
+    driver.encoder.interface.device_user = &driver.motor;
+
+    float32_t ref_position = 10.0F;
     float32_t ref_position_step = 1.0F;
     float32_t delta_time = 0.01F;
 
@@ -190,30 +196,20 @@ int main(void)
 
     while (1) {
         if (has_delta_timer_elapsed) {
-            float32_t position = step_motor_get_position(&step_motor, delta_time);
-            float32_t error_position = ref_position - position;
-            float32_t control_speed =
-                pid_regulator_get_sat_control(&regulator, error_position, delta_time);
-            step_motor_set_speed(&step_motor, control_speed, delta_time);
+            motor_driver_set_position(&driver, ref_position, delta_time);
 
-            printf("ref_position: %f, position: %f, error_position: %f, control_speed: %f\n\r ",
-                   ref_position,
-                   position,
-                   error_position,
-                   control_speed);
-
-            if (ref_position > 360.0F || ref_position < 0.0F) {
-                ref_position_step = -ref_position_step;
-            }
-            ref_position += ref_position_step;
+            // if (ref_position > 360.0F || ref_position < 0.0F) {
+            //     ref_position_step = -ref_position_step;
+            // }
+            // ref_position += ref_position_step;
 
             has_delta_timer_elapsed = false;
         }
 
-        if (has_pwm_pwm_finished) {
-            step_motor_update_step_count(&step_motor);
+        if (has_pwm_finished) {
+            step_motor_update_step_count(&driver.motor);
 
-            has_pwm_pwm_finished = false;
+            has_pwm_finished = false;
         }
     }
 }

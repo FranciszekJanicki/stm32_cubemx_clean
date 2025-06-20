@@ -1,5 +1,6 @@
 #include "motor_driver.h"
 #include <assert.h>
+#include <stdio.h>
 #include <string.h>
 
 void motor_driver_initialize(motor_driver_t* driver,
@@ -22,7 +23,7 @@ void motor_driver_deinitialize(motor_driver_t* driver)
     memset(driver, 0, sizeof(*driver));
 }
 
-void motor_set_position(motor_driver_t* driver, float32_t position, float32_t delta_time)
+void motor_driver_set_position(motor_driver_t* driver, float32_t position, float32_t delta_time)
 {
     assert(driver);
 
@@ -34,4 +35,10 @@ void motor_set_position(motor_driver_t* driver, float32_t position, float32_t de
         pid_regulator_get_sat_control(&driver->regulator, error_position, delta_time);
 
     step_motor_set_speed(&driver->motor, control_speed, delta_time);
+
+    printf("position: %f, measured_position: %f, error_position: %f, control_speed: %f\n\r ",
+           position,
+           measured_position,
+           error_position,
+           control_speed);
 }

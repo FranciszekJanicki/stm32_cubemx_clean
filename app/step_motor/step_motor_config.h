@@ -22,7 +22,6 @@ typedef struct {
     int32_t step_count;
     float32_t prev_position;
     float32_t prev_speed;
-    float32_t prev_acceleration;
     step_motor_direction_t direction;
 } step_motor_state_t;
 

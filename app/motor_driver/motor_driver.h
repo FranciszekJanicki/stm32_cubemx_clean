@@ -17,6 +17,6 @@ void motor_driver_initialize(motor_driver_t* driver,
                              step_motor_t const* motor);
 void motor_driver_deinitialize(motor_driver_t* driver);
 
-void motor_set_position(motor_driver_t* driver, float32_t position, float32_t delta_time);
+void motor_driver_set_position(motor_driver_t* driver, float32_t position, float32_t delta_time);
 
 #endif // MOTOR_DRIVER_MOTOR_DRIVER_H
