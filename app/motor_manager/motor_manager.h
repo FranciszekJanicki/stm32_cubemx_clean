@@ -1,0 +1,6 @@
+#ifndef MOTOR_MANAGER_MOTOR_MANAGER_H
+#define MOTOR_MANAGER_MOTOR_MANAGER_H
+
+void motor_manager_init(void);
+
+#endif // MOTOR_MANAGER_MOTOR_MANAGER_H

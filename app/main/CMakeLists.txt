@@ -2,7 +2,6 @@ add_executable(main)
 
 target_sources(main PRIVATE 
     main.c
-    nvic.c
 )
 
 target_include_directories(main PRIVATE 
@@ -12,6 +11,7 @@ target_include_directories(main PRIVATE
     ${APP_DIR}/step_motor
     ${APP_DIR}/pid_regulator
     ${APP_DIR}/rotary_encoder
+    ${APP_DIR}/motor_manager
 )
 
 target_link_libraries(main PRIVATE
@@ -20,6 +20,7 @@ target_link_libraries(main PRIVATE
     a4988
     step_motor
     pid_regulator
+    motor_manager
     rotary_encoder
 )
 
