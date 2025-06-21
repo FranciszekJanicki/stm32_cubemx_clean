@@ -1,17 +1,12 @@
 #include "main.h"
 #include "a4988.h"
-#include "a4988_config.h"
 #include "gpio.h"
 #include "motor_driver.h"
 #include "pid_regulator.h"
 #include "step_motor.h"
-#include "step_motor_config.h"
 #include "stm32l4xx_hal.h"
 #include "tim.h"
 #include "usart.h"
-#include <assert.h>
-#include <limits.h>
-#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -114,11 +109,37 @@ static step_motor_err_t step_motor_device_set_direction(void* user,
     return STEP_MOTOR_ERR_OK;
 }
 
-static rotary_encoder_err_t rotary_encoder_device_get_step_count(void* user, int64_t* step_count)
+static motor_driver_err_t motor_driver_motor_set_speed(void* user, float32_t speed)
 {
-    *step_count = ((step_motor_t*)user)->state.step_count;
+    step_motor_set_speed(user, speed);
 
-    return ROTARY_ENCODER_ERR_OK;
+    return MOTOR_DRIVER_ERR_OK;
+}
+
+static motor_driver_err_t motor_driver_encoder_get_position(void* user, float32_t* position)
+{
+    *position = step_motor_get_position(user);
+
+    return MOTOR_DRIVER_ERR_OK;
+}
+
+static motor_driver_err_t motor_driver_regulator_get_control(void* user,
+                                                             float32_t error,
+                                                             float32_t* control,
+                                                             float32_t delta_time)
+{
+    *control = pid_regulator_get_sat_control(user, error, delta_time);
+
+    return MOTOR_DRIVER_ERR_OK;
+}
+
+static motor_driver_err_t motor_driver_fault_get_current(void* user, float32_t* current)
+{
+    (void)user;
+
+    *current = 0.5F;
+
+    return MOTOR_DRIVER_ERR_OK;
 }
 
 static bool volatile has_delta_timer_elapsed = false;
@@ -160,8 +181,8 @@ int main(void)
     step_motor_initialize(
         &motor,
         &(step_motor_config_t){.min_position = 0.0F,
-                               .max_position = 360.0F,
-                               .min_speed = 0.0F,
+                               .max_position = 359.0F,
+                               .min_speed = 10.0F,
                                .max_speed = 500.0F,
                                .step_change = 0.9F},
         &(step_motor_interface_t){.device_user = &a4988,
@@ -174,22 +195,25 @@ int main(void)
                              &(pid_regulator_config_t){.prop_gain = 10.0F,
                                                        .int_gain = 0.0F,
                                                        .dot_gain = 0.0F,
-                                                       .min_control = 0.0F,
+                                                       .min_control = 10.0F,
                                                        .max_control = 500.0F,
                                                        .sat_gain = 0.0F});
 
-    rotary_encoder_t encoder;
-    rotary_encoder_initialize(&encoder,
-                              &(rotary_encoder_config_t){.step_change = 0.9F,
-                                                         .min_position = 0.0F,
-                                                         .max_position = 360.0F},
-                              &(rotary_encoder_interface_t){
-                                  .device_get_step_count = rotary_encoder_device_get_step_count});
-
     motor_driver_t driver;
-    motor_driver_initialize(&driver, &encoder, &regulator, &motor);
-
-    driver.encoder.interface.device_user = &driver.motor;
+    motor_driver_initialize(
+        &driver,
+        &(motor_driver_config_t){.min_position = 0.0F,
+                                 .max_position = 359.0F,
+                                 .min_speed = 10.0F,
+                                 .max_speed = 500.0F,
+                                 .max_current = 2.0F},
+        &(motor_driver_interface_t){.motor_user = &motor,
+                                    .motor_set_speed = motor_driver_motor_set_speed,
+                                    .encoder_user = &motor,
+                                    .encoder_get_position = motor_driver_encoder_get_position,
+                                    .regulator_user = &regulator,
+                                    .regulator_get_control = motor_driver_regulator_get_control,
+                                    .fault_get_current = motor_driver_fault_get_current});
 
     float32_t position = 10.0F;
     float32_t position_step = 1.0F;
@@ -211,7 +235,7 @@ int main(void)
         }
 
         if (has_pwm_finished) {
-            step_motor_update_step_count(&driver.motor);
+            step_motor_update_step_count(&motor);
 
             has_pwm_finished = false;
         }

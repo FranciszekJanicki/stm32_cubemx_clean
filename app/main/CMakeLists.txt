@@ -1,7 +1,7 @@
 add_executable(main)
 
 target_sources(main PRIVATE 
-    "main.c"
+    main.c
 )
 
 target_include_directories(main PRIVATE 
@@ -9,8 +9,8 @@ target_include_directories(main PRIVATE
     ${APP_DIR}/motor_driver
     ${APP_DIR}/a4988
     ${APP_DIR}/step_motor
-    ${APP_DIR}/rotary_encoder
     ${APP_DIR}/pid_regulator
+    ${APP_DIR}/rotary_encoder
 )
 
 target_link_libraries(main PRIVATE
@@ -18,8 +18,8 @@ target_link_libraries(main PRIVATE
     motor_driver
     a4988
     step_motor
-    rotary_encoder
     pid_regulator
+    rotary_encoder
 )
 
 target_compile_options(main PUBLIC

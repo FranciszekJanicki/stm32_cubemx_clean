@@ -1,19 +1,13 @@
 add_library(motor_driver STATIC)
 
 target_sources(motor_driver PRIVATE 
-    "motor_driver.c"
+    motor_driver.c
 )
 
 target_include_directories(motor_driver PRIVATE
-    ${APP_DIR}/pid_regulator
-    ${APP_DIR}/step_motor
-    ${APP_DIR}/rotary_encoder
 )
 
 target_link_libraries(motor_driver PRIVATE
-    step_motor
-    pid_regulator
-    rotary_encoder
 )
 
 target_compile_options(motor_driver PUBLIC

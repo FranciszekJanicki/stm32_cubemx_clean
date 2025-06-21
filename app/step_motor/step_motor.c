@@ -95,25 +95,22 @@ static inline float32_t step_motor_clamp_acceleration(step_motor_t const* motor,
 }
 
 static inline step_motor_direction_t step_motor_speed_to_direction(step_motor_t const* motor,
-                                                                   float32_t speed,
-                                                                   float32_t delta_time)
+                                                                   float32_t speed)
 {
-    if (fabsf(speed) < motor->config.min_speed ||
-        fabsf(speed) < (motor->config.step_change / delta_time)) {
+    if (fabsf(speed) < motor->config.min_speed /*||
+        fabsf(speed) < (motor->config.step_change / delta_time)*/) {
         return STEP_MOTOR_DIRECTION_STOP;
     }
 
     return speed > 0.0F ? STEP_MOTOR_DIRECTION_FORWARD : STEP_MOTOR_DIRECTION_BACKWARD;
 }
 
-static inline uint32_t step_motor_speed_to_frequency(step_motor_t const* motor,
-                                                     float32_t speed,
-                                                     float32_t delta_time)
+static inline uint32_t step_motor_speed_to_frequency(step_motor_t const* motor, float32_t speed)
 {
     assert(motor->config.step_change > 0.0F);
 
-    if (fabsf(speed) < motor->config.min_speed ||
-        fabsf(speed) < (motor->config.step_change / delta_time)) {
+    if (fabsf(speed) < motor->config.min_speed /*||
+        fabsf(speed) < (motor->config.step_change / delta_time)*/) {
         return 0U;
     }
 
@@ -215,17 +212,17 @@ step_motor_err_t step_motor_set_position(step_motor_t* motor,
 
     position = step_motor_clamp_position(motor, position);
 
-    float32_t current_position = step_motor_get_position(motor, delta_time);
+    float32_t current_position = step_motor_get_position(motor);
     float32_t speed = (position - current_position) / delta_time;
 
-    return step_motor_set_speed(motor, speed, delta_time);
+    return step_motor_set_speed(motor, speed);
 }
 
-step_motor_err_t step_motor_set_speed(step_motor_t* motor, float32_t speed, float32_t delta_time)
+step_motor_err_t step_motor_set_speed(step_motor_t* motor, float32_t speed)
 {
-    assert(motor && delta_time > 0.0F);
+    assert(motor);
 
-    step_motor_direction_t direction = step_motor_speed_to_direction(motor, speed, delta_time);
+    step_motor_direction_t direction = step_motor_speed_to_direction(motor, speed);
 
     step_motor_err_t err = step_motor_set_direction(motor, direction);
     if (err != STEP_MOTOR_ERR_OK || direction == STEP_MOTOR_DIRECTION_STOP) {
@@ -233,7 +230,7 @@ step_motor_err_t step_motor_set_speed(step_motor_t* motor, float32_t speed, floa
     }
 
     speed = step_motor_clamp_speed(motor, speed);
-    uint32_t frequency = step_motor_speed_to_frequency(motor, speed, delta_time);
+    uint32_t frequency = step_motor_speed_to_frequency(motor, speed);
 
     return step_motor_set_frequency(motor, frequency);
 }
@@ -249,12 +246,12 @@ step_motor_err_t step_motor_set_acceleration(step_motor_t* motor,
     float32_t current_acceleration = step_motor_get_acceleration(motor, delta_time);
     float32_t speed = (acceleration + current_acceleration) * delta_time / 2.0F;
 
-    return step_motor_set_speed(motor, speed, delta_time);
+    return step_motor_set_speed(motor, speed);
 }
 
-float32_t step_motor_get_position(step_motor_t* motor, float32_t delta_time)
+float32_t step_motor_get_position(step_motor_t* motor)
 {
-    assert(motor && delta_time > 0.0F);
+    assert(motor);
 
     float32_t position = step_motor_step_count_to_position(motor, motor->state.step_count);
 
@@ -265,7 +262,7 @@ float32_t step_motor_get_speed(step_motor_t* motor, float32_t delta_time)
 {
     assert(motor && delta_time > 0.0F);
 
-    float32_t position = step_motor_get_position(motor, delta_time);
+    float32_t position = step_motor_get_position(motor);
     float32_t speed = (position - motor->state.prev_position) / delta_time;
 
     motor->state.prev_position = position;

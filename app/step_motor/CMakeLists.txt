@@ -1,7 +1,7 @@
 add_library(step_motor STATIC)
 
 target_sources(step_motor PRIVATE 
-    "step_motor.c"
+    step_motor.c
 )
 
 target_include_directories(step_motor PRIVATE 

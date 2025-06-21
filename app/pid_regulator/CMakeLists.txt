@@ -1,7 +1,7 @@
 add_library(pid_regulator STATIC)
 
 target_sources(pid_regulator PRIVATE 
-    "pid_regulator.c"
+    pid_regulator.c
 )
 
 target_include_directories(pid_regulator PRIVATE 
