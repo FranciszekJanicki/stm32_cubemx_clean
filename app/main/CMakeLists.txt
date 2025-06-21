@@ -2,6 +2,7 @@ add_executable(main)
 
 target_sources(main PRIVATE 
     main.c
+    nvic.c
 )
 
 target_include_directories(main PRIVATE 
