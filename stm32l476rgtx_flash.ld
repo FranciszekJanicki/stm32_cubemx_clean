@@ -198,6 +198,20 @@ SECTIONS
     libgcc.a ( * )
   }
 
+  /* Custom section for specific FreeRTOS task */
+  motor_task (NOLOAD) :
+  {
+      . = ALIGN(8);
+      _motor_task_start = .;
+      *(.motor_task)
+      . = ALIGN(8);
+      _motor_task_end = .;
+
+      /* Force section to occupy exactly 8 KB */
+      . = _motor_task_start + 0x2000;
+  } >RAM2
+
+
 }
 
 

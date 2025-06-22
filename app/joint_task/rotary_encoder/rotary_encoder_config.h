@@ -3,7 +3,10 @@
 
 #include <stdint.h>
 
+#ifndef FLOAT32
+#define FLOAT32
 typedef float float32_t;
+#endif // FLOAT32
 
 typedef enum {
     ROTARY_ENCODER_ERR_OK = 0,

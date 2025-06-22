@@ -35,8 +35,8 @@ static inline float32_t pid_regulator_get_int_term(pid_regulator_t* regulator,
     regulator->state.int_sat_error +=
         ((regulator->state.sat_error + regulator->state.prev_sat_error) * delta_time / 2.0F);
 
-    return regulator->config.int_gain * regulator->state.int_error -
-           regulator->config.sat_gain * regulator->state.int_sat_error;
+    return (regulator->config.int_gain * regulator->state.int_error) -
+           (regulator->config.sat_gain * regulator->state.int_sat_error);
 }
 
 static inline float32_t pid_regulator_clamp_control(pid_regulator_t* regulator, float32_t control)
