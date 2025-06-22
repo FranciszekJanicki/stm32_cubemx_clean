@@ -25,7 +25,7 @@ typedef struct {
     pid_regulator_t regulator;
 
     GPIO_TypeDef* dir_port;
-    uint16_t dir_pin;
+    uint32_t dir_pin;
     TIM_HandleTypeDef* delta_timer;
     TIM_HandleTypeDef* pwm_timer;
     uint32_t pwm_channel;

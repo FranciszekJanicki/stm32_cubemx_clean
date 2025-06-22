@@ -3,7 +3,7 @@
 
 #include "joint_manager.h"
 
-joint_err_t joint_task_initialize(void);
+joint_err_t joint_task_initialize(joint_manager_t const* manager);
 TaskHandle_t joint_task_get_handle(void);
 
 joint_err_t joint_queue_initialize(void);

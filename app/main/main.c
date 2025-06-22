@@ -1,5 +1,6 @@
 #include "main.h"
 #include "gpio.h"
+#include "joint_manager.h"
 #include "joint_task.h"
 #include "stm32l4xx_hal.h"
 #include "tim.h"
@@ -16,8 +17,15 @@ int main(void)
     MX_TIM2_Init();
     MX_USART2_UART_Init();
 
+    joint_manager_t manager = {.dir_port = GPIOA,
+                               .dir_pin = 1U << 10U,
+                               .delta_time = 0.01F,
+                               .pwm_channel = TIM_CHANNEL_4,
+                               .delta_timer = &htim2,
+                               .pwm_timer = &htim1};
+
     joint_queue_initialize();
-    joint_task_initialize();
+    joint_task_initialize(&manager);
 
     vTaskStartScheduler();
 }
