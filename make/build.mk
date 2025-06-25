@@ -6,8 +6,8 @@ build:
 
 .PHONY: clean
 clean: 
-	cd $(PROJECT_DIR) && rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR)
 
-.PHONY: cmake
-cmake:
-	cd $(PROJECT_DIR) && $(MAKE) clean && mkdir build && cmake -S . -B build
+.PHONY: setup_cmake
+setup_cmake:
+	$(MAKE) clean && mkdir build && cmake -S . -B build

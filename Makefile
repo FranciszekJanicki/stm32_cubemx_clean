@@ -7,8 +7,9 @@ include make/third_party.mk
 
 .PHONY: setup
 setup:
-	$(MAKE) add_third_party
-	$(MAKE) cmake
+	$(MAKE) setup_components
+	$(MAKE) setup_third_party
+	$(MAKE) setup_cmake
 
 .PHONY: all
 all:

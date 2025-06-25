@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-COMPONENTS_FILE="components/components.txt"
+COMPONENTS_FILE="components.txt"
 
 if [ ! -f "$COMPONENTS_FILE" ]; then
   echo "File $COMPONENTS_FILE not found"

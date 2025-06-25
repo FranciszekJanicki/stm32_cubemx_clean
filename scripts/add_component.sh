@@ -8,7 +8,7 @@ fi
 
 REPO_URL=$1
 COMP_NAME=$2
-COMP_PATH="app/components/$COMP_NAME"
+COMP_PATH="components/$COMP_NAME"
 
 if [ -d "$COMP_PATH" ]; then
   echo "Component $COMP_NAME already exists at $COMP_PATH"

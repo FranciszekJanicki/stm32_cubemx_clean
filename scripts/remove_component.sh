@@ -7,7 +7,7 @@ if [ "$#" -ne 1 ]; then
 fi
 
 COMP_NAME=$1
-COMP_PATH="app/components/$COMP_NAME"
+COMP_PATH="components/$COMP_NAME"
 
 if [ ! -d "$COMP_PATH" ]; then
   echo "Component $COMP_NAME does not exist at $COMP_PATH"
