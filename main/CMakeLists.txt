@@ -6,6 +6,8 @@ target_sources(main PRIVATE
 
 target_link_libraries(main PRIVATE
     stm32cubemx
+    step_motor
+    pid_regulator
 )
 
 target_compile_options(main PUBLIC
