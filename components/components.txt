@@ -1,4 +1,0 @@
-git@github.com:FranciszekJanicki/pid_regulator.git components/pid_regulator
-git@github.com:FranciszekJanicki/step_motor.git components/step_motor
-git@github.com:FranciszekJanicki/motor_driver.git components/motor_driver
-git@github.com:FranciszekJanicki/a4988.git components/a4988
