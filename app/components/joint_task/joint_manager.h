@@ -6,7 +6,6 @@
 #include "motor_driver.h"
 #include "pid_regulator.h"
 #include "queue.h"
-#include "rotary_encoder.h"
 #include "step_motor.h"
 #include "task.h"
 #include <stdint.h>
@@ -21,7 +20,6 @@ typedef struct {
     a4988_t a4988;
     motor_driver_t driver;
     step_motor_t motor;
-    rotary_encoder_t encoder;
     pid_regulator_t regulator;
 
     GPIO_TypeDef* dir_port;

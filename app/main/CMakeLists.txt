@@ -4,24 +4,9 @@ target_sources(main PRIVATE
     main.c
 )
 
-target_include_directories(main PRIVATE 
-    ${CMAKE_DIR}/stm32cubemx
-    ${APP_DIR}/motor_driver
-    ${APP_DIR}/a4988
-    ${APP_DIR}/step_motor
-    ${APP_DIR}/pid_regulator
-    ${APP_DIR}/rotary_encoder
-    ${APP_DIR}/joint_task
-)
-
 target_link_libraries(main PRIVATE
     stm32cubemx
-    motor_driver
-    a4988
-    step_motor
-    pid_regulator
     joint_task
-    rotary_encoder
 )
 
 target_compile_options(main PUBLIC

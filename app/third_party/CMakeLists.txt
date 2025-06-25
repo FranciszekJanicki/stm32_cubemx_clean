@@ -1,0 +1,4 @@
+add_subdirectory(motor_driver)
+add_subdirectory(pid_regulator)
+add_subdirectory(step_motor)
+add_subdirectory(a4988)

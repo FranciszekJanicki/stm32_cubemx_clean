@@ -1,16 +1,23 @@
-add_library(motor_driver STATIC)
+add_library(joint_task STATIC)
 
-target_sources(motor_driver PRIVATE 
-    motor_driver.c
+target_sources(joint_task PRIVATE 
+    joint_task.c
+    joint_manager.c
 )
 
-target_include_directories(motor_driver PRIVATE
+target_include_directories(joint_task PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(motor_driver PRIVATE
+target_link_libraries(joint_task PUBLIC
+    motor_driver
+    a4988
+    step_motor
+    pid_regulator
+    stm32cubemx
 )
 
-target_compile_options(motor_driver PUBLIC
+target_compile_options(joint_task PUBLIC
     -std=c23
     -Wall
     -Wextra

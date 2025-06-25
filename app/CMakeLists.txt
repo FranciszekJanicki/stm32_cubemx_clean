@@ -1,2 +1,3 @@
-add_subdirectory(${APP_DIR}/main)
-add_subdirectory(${APP_DIR}/joint_task)
+add_subdirectory(main)
+add_subdirectory(components)
+add_subdirectory(third_party)

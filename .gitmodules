@@ -1,0 +1,12 @@
+[submodule "/home/franek/Documents/stm32_cubemx/stm32l476rg/stm32_cubemx_joint_task/app/third_party/pid_regulator"]
+	path = /home/franek/Documents/stm32_cubemx/stm32l476rg/stm32_cubemx_joint_task/app/third_party/pid_regulator
+	url = git@github.com:FranciszekJanicki/pid_regulator.git
+[submodule "/home/franek/Documents/stm32_cubemx/stm32l476rg/stm32_cubemx_joint_task/app/third_party/step_motor"]
+	path = /home/franek/Documents/stm32_cubemx/stm32l476rg/stm32_cubemx_joint_task/app/third_party/step_motor
+	url = git@github.com:FranciszekJanicki/step_motor.git
+[submodule "/home/franek/Documents/stm32_cubemx/stm32l476rg/stm32_cubemx_joint_task/app/third_party/motor_driver"]
+	path = /home/franek/Documents/stm32_cubemx/stm32l476rg/stm32_cubemx_joint_task/app/third_party/motor_driver
+	url = git@github.com:FranciszekJanicki/motor_driver.git
+[submodule "/home/franek/Documents/stm32_cubemx/stm32l476rg/stm32_cubemx_joint_task/app/third_party/a4988"]
+	path = /home/franek/Documents/stm32_cubemx/stm32l476rg/stm32_cubemx_joint_task/app/third_party/a4988
+	url = git@github.com:FranciszekJanicki/a4988.git

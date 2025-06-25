@@ -4,7 +4,6 @@
 #include "gpio.h"
 #include "motor_driver.h"
 #include "pid_regulator.h"
-#include "rotary_encoder.h"
 #include "step_motor.h"
 #include "stm32l4xx_hal.h"
 #include "task.h"
@@ -117,15 +116,6 @@ static step_motor_err_t step_motor_device_set_direction(void* user,
     return STEP_MOTOR_ERR_OK;
 }
 
-static rotary_encoder_err_t rotary_encoder_device_get_step_count(void* user, int64_t* step_count)
-{
-    joint_manager_t* manager = (joint_manager_t*)user;
-
-    *step_count = manager->motor.state.step_count;
-
-    return STEP_MOTOR_ERR_OK;
-}
-
 static motor_driver_err_t motor_driver_joint_set_speed(void* user, float32_t speed)
 {
     joint_manager_t* manager = (joint_manager_t*)user;
@@ -139,7 +129,7 @@ static motor_driver_err_t motor_driver_encoder_get_position(void* user, float32_
 {
     joint_manager_t* manager = (joint_manager_t*)user;
 
-    rotary_encoder_get_position(&manager->encoder, position);
+    *position = step_motor_get_position(&manager->motor);
 
     return MOTOR_DRIVER_ERR_OK;
 }
@@ -302,14 +292,6 @@ joint_err_t joint_manager_initialize(joint_manager_t* manager)
                                   .device_set_frequency = step_motor_device_set_frequency,
                                   .device_set_direction = step_motor_device_set_direction},
         0.0F);
-
-    rotary_encoder_initialize(&manager->encoder,
-                              &(rotary_encoder_config_t){.min_position = 0.0F,
-                                                         .max_position = 359.0F,
-                                                         .step_change = 1.8F},
-                              &(rotary_encoder_interface_t){
-                                  .device_user = manager,
-                                  .device_get_step_count = rotary_encoder_device_get_step_count});
 
     pid_regulator_initialize(&manager->regulator,
                              &(pid_regulator_config_t){.prop_gain = 10.0F,
