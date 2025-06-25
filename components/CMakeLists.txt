@@ -1,0 +1,6 @@
+file(GLOB COMPONENT_DIRS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*)
+foreach(comp ${COMPONENT_DIRS})
+    if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${comp})
+        add_subdirectory(${comp})
+    endif()
+endforeach()

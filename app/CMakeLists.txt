@@ -1,3 +1,0 @@
-add_subdirectory(main)
-add_subdirectory(components)
-add_subdirectory(third_party)

@@ -14,22 +14,24 @@ set(CMAKE_CXX_EXTENSIONS ON)
 
 set(PROJECT_DIR ${CMAKE_SOURCE_DIR})
 set(APP_DIR ${PROJECT_DIR}/app)
-set(CMAKE_DIR ${PROJECT_DIR}/cmake)
+set(CUBEMX_DIR ${PROJECT_DIR}/cmake/stm32cubemx)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif()
 
-message("Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 
-add_subdirectory(${CMAKE_DIR}/stm32cubemx)
-add_subdirectory(${APP_DIR})
+add_subdirectory(main)
+add_subdirectory(components)
+add_subdirectory(third_party)
+add_subdirectory(cubemx)
 
-target_compile_options(stm32cubemx INTERFACE 
+target_compile_options(stm32cubemx INTERFACE
     -w
 )

@@ -1,8 +1,8 @@
 include make/build.mk
-include make/lint.mk
+include make/linters.mk
 include make/cubemx.mk
 include make/flash.mk
-include make/monitor.mk
+include make/components.mk
 include make/third_party.mk
 
 .PHONY: setup
