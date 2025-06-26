@@ -1,6 +1,10 @@
 file(GLOB COMPONENT_DIRS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*)
-foreach(comp ${COMPONENT_DIRS})
-    if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${comp})
-        add_subdirectory(${comp})
+
+foreach(component ${COMPONENT_DIRS})
+    if (IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${component})
+        if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${component}/CMakeLists.txt)
+            message(STATUS "Adding component: ${component}")
+            add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/${component})
+        endif()
     endif()
 endforeach()
