@@ -75,7 +75,6 @@ add_library(STM32_Drivers OBJECT)
 target_sources(STM32_Drivers PRIVATE ${STM32_Drivers_Src})
 target_link_libraries(STM32_Drivers PUBLIC stm32cubemx)
 
-
 add_library(cubemx STATIC)
 target_sources(cubemx PRIVATE ${MX_Application_Src})
 target_link_directories(cubemx PUBLIC ${MX_LINK_DIRS})
